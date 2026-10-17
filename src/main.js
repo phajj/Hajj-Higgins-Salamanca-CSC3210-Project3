@@ -32,45 +32,25 @@ window.addEventListener("resize", () => {
 
 
 // Keyboard input handling
-var wPresssed = false;
-var aPresssed = false;
-var sPresssed = false;
-var dPresssed = false;
 var qPresssed = false;
 var ePresssed = false;
 
 /**
- * Handles keyboard input for perspectiveCamera movement:
- * w a s d
- * (copied from Project 2)
+ * Handles keyboard input for rotating the ship:
+ * q e
+ * (copied and modified from Project 2)
  */
 function keyboardInput() {
-  // Handle keydown events to start movement
+  // Handle keydown events to start rotating
   window.addEventListener("keydown", (event) => {
-    if (event.key.toLocaleLowerCase() === "w")
-      wPresssed = true;
-    if (event.key.toLocaleLowerCase() === "a")
-      aPresssed = true;
-    if (event.key.toLocaleLowerCase() === "s")
-      sPresssed = true;
-    if (event.key.toLocaleLowerCase() === "d")
-      dPresssed = true;
     if (event.key.toLocaleLowerCase() === "q")
       qPresssed = true;
     if (event.key.toLocaleLowerCase() === "e")
       ePresssed = true;
     });
 
-  // Handle keyup events to stop movement
+  // Handle keyup events to stop rotating
   window.addEventListener("keyup", (event) => {
-    if (event.key.toLocaleLowerCase() === "w")
-      wPresssed = false;
-    if (event.key.toLocaleLowerCase() === "a")
-      aPresssed = false;
-    if (event.key.toLocaleLowerCase() === "s")
-      sPresssed = false;
-    if (event.key.toLocaleLowerCase() === "d")
-      dPresssed = false;
     if (event.key.toLocaleLowerCase() === "q")
       qPresssed = false;
     if (event.key.toLocaleLowerCase() === "e")
@@ -78,40 +58,24 @@ function keyboardInput() {
   });
 }
 
-// Reused every frame by updateMovement() instead of allocating new vectors
+// Reused every frame by updateMovement() instead of allocating a new vector
 const forward = new THREE.Vector3();
-const right = new THREE.Vector3();
-const movement = new THREE.Vector3();
 
 /**
- * Moves the perspective camera with WASD.
- * Called every frame from animate() so multiple keys can be held at once.
- * (copied from project 2)
+ * Moves the perspective camera forward (towards the center of the screen)
+ * at a constant speed. Called every frame from animate().
+ * (copied and modified from project 2)
  */
 function updateMovement() {
-  // Use the camera's view and horizontal axes so WASD follows its orientation.
   camera.getWorldDirection(forward);
-  right.crossVectors(forward, camera.up).normalize();
-  movement.set(0, 0, 0);
-
-  if (wPresssed)
-    movement.add(forward);
-  if (aPresssed)
-    movement.sub(right);
-  if (sPresssed)
-    movement.sub(forward);
-  if (dPresssed)
-    movement.add(right);
-  // Normalize combined input so diagonal movement has the same speed.
-  if (movement.lengthSq() > 0)
-    camera.position.addScaledVector(movement.normalize(), CAMERA_MOVE_SPEED);
+  camera.position.addScaledVector(forward, CAMERA_MOVE_SPEED);
 }
 
 /**
- * Rotates the perspective camera left or right.
+ * Rotates the ship (perspective camera) left or right.
  * @returns {void}
  */
-function rotateCam(){
+function rotateShip(){
   if (qPresssed)
     camera.rotation.z += 0.01;
   if (ePresssed)
@@ -141,7 +105,7 @@ keyboardInput();
  */
 function animate() {
   updateMovement();
-  rotateCam();
+  rotateShip();
   renderer.render(scene, camera);
 }
 
