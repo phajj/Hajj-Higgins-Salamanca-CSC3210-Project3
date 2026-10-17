@@ -1,0 +1,12 @@
+{
+  "name": "galactic-glide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CSC 3210 Galactic Glide",
+  "scripts": {
+    "start": "serve ."
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}
