@@ -16,4 +16,13 @@ export function perspectiveCamera(aspect) {
   return camera;
 }
 
+/**
+ * Creates the rear view mirror camera matching its aspect ratio to the 0.8 x 0.3 mirror block in ship.js.
+ * 
+ * @returns {THREE.PerspectiveCamera}
+ */
+export function rearViewCamera() {
+  return new THREE.PerspectiveCamera(50, 0.8 / 0.3, 0.1, 500);
+}
+
 

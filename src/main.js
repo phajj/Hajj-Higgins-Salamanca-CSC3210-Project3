@@ -1,11 +1,15 @@
 import * as THREE from "three";
-import { perspectiveCamera } from "./camera.js";
+import { perspectiveCamera, rearViewCamera } from "./camera.js";
 import { createShip } from "./ship.js";
 
 const MOUSE_SENSITIVITY = 0.002;
 const CAMERA_MOVE_SPEED = 0.01;
 const ROLL_SPEED = 1.5;
 const MAX_DT = 0.1;
+
+const MIRROR_WIDTH = 0.2;
+const MIRROR_HEIGHT = 0.07;
+const MIRROR_BOTTOM = 0.8;
 
 // Scene
 const scene = new THREE.Scene();
@@ -95,11 +99,15 @@ function onMouseMove(event) {
 document.addEventListener("mousemove", onMouseMove);
 keyboardInput();
 
-const { ship, cameraMount, update } = createShip();
+const { ship, cameraMount, rearMount, update } = createShip();
 
 // Flip the hierarchy: the camera lives in the scene, the ship rides on the camera
 scene.add(camera);
 camera.add(ship);
+
+// Add rear camera to the ship
+const rearCamera = rearViewCamera();
+rearMount.add(rearCamera);
 
 // Offset the ship so the camera sits at the pilot's eye position
 ship.position.copy(cameraMount.position).negate();
@@ -140,6 +148,22 @@ let lastTime = null;
 //END TEST OBJECTS
 
 /**
+ * Place rear view mirror using the scissor test
+ */
+function renderRearViewMirror() {
+  const width = window.innerHeight * MIRROR_WIDTH;
+  const height = window.innerHeight * MIRROR_HEIGHT;
+  const x = (window.innerWidth - width) / 2;
+  const y = window.innerHeight * MIRROR_BOTTOM;
+
+  renderer.setScissorTest(true);
+  renderer.setScissor(x, y, width, height);
+  renderer.setViewport(x, y, width, height);
+  renderer.render(scene, rearCamera);
+  renderer.setScissorTest(false);
+}
+
+/**
  * Render loop, called once per frame
  */
 function animate(time) {
@@ -149,7 +173,12 @@ function animate(time) {
   updateMovement(dt);
   rotateShip(dt);
   update(time / 1000, 0, (qPresssed ? 1 : 0) - (ePresssed ? 1 : 0));
+
+  // Main cockpit view over the full screen
+  renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
   renderer.render(scene, camera);
+
+  renderRearViewMirror();
 }
 
 renderer.setAnimationLoop(animate);
