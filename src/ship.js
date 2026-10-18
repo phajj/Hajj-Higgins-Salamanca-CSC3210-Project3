@@ -210,6 +210,19 @@ function buildWheel() {
   return { wheel, rotor };
 }
 
+// Placeholder for the rear-view mirror display
+function buildRearViewMirror() {
+  const mirror = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.8, 0.3),
+    new THREE.MeshBasicMaterial({ color: 0x222222 }),
+  );
+
+  mirror.name = "rearViewMirror";
+  mirror.position.set(0, 2.3, -1.85);
+
+  return mirror;
+}
+
 // Assemble the ship
 export function createShip() {
   const ship = new THREE.Group();
@@ -221,7 +234,14 @@ export function createShip() {
 
   const { wheel, rotor } = buildWheel();
 
-  ship.add(buildHull(), buildDashboard(), wheel, buildLights(), cameraMount);
+  ship.add(
+    buildHull(),
+    buildDashboard(),
+    wheel,
+    buildLights(),
+    cameraMount,
+    buildRearViewMirror(),
+  );
 
   let previousTime = null;
 
