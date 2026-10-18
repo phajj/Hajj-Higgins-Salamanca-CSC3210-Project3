@@ -210,7 +210,7 @@ function buildWheel() {
   return { wheel, rotor };
 }
 
-// Placeholder for the rear-view mirror display
+// Builds the rear view mirror mesh for the ship
 function buildRearViewMirror() {
   const mirror = new THREE.Mesh(
     new THREE.PlaneGeometry(0.8, 0.3),
@@ -232,6 +232,12 @@ export function createShip() {
   cameraMount.name = "cameraMount";
   cameraMount.position.set(0, 1.1, 0.5);
 
+  // Rear mount for the camera to attach to
+  const rearMount = new THREE.Group();
+  rearMount.name = "rearMount";
+  rearMount.position.set(0, 1.1, D / 2 + T + 0.05);
+  rearMount.rotation.y = Math.PI;
+
   const { wheel, rotor } = buildWheel();
 
   ship.add(
@@ -240,6 +246,7 @@ export function createShip() {
     wheel,
     buildLights(),
     cameraMount,
+    rearMount,
     buildRearViewMirror(),
   );
 
@@ -254,5 +261,5 @@ export function createShip() {
       (steer * 0.9 - rotor.rotation.z) * (1 - Math.exp(-10 * dt));
   }
 
-  return { ship, cameraMount, update };
+  return { ship, cameraMount, rearMount, update };
 }

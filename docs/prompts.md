@@ -11,6 +11,8 @@ This project is using perspective camera and keybaord/mouse controls to control 
 - Remove all the leftover keyboard inputs other than the roateCam related ones (rename to rotateShip), instead have the perspective cam move at a constant speed "forward" (towards the center of the screen)
 
 ## Jackson
+ 
+- Help me fit the scissor test to the placeholder mirror in the ship
 
 ## Laura
 
