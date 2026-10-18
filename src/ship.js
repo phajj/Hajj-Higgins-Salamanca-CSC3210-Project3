@@ -124,7 +124,7 @@ function buildDashboard() {
   hinge.add(panel);
 
   new THREE.TextureLoader().load(
-    new URL("./controlpanel.png", import.meta.url).href,
+    new URL("../resources/controlpanel.png", import.meta.url).href,
     (texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
 
