@@ -16,6 +16,7 @@ This file records the prompts we gave to AI coding assistents and/or other LLMs 
 ## Jackson
  
 - Help me fit the scissor test to the placeholder mirror in the ship
+- help me finish the ship sparks method in @src/main.js. I am struggling to get the sparks to fly outward as intended.
 
 ## Laura
 

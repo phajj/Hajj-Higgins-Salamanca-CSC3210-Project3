@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { perspectiveCamera, rearViewCamera } from "./camera.js";
 import { createShip } from "./ship.js";
-import { updateAsteroids } from "./asteroid.js";
+import { updateAsteroids, asteroids } from "./asteroid.js";
 
 const MOUSE_SENSITIVITY = 0.002;
 const CAMERA_MOVE_SPEED = 0.01;
@@ -16,7 +16,10 @@ const MIRROR_BOTTOM = 0.8;
 const FOG_NEAR = 30;
 const FOG_FAR = 60;
 
-const asteroids = [];
+const SPARK_COUNT = 40;
+const SPARK_SPEED = 10;
+const SPARK_LIFETIME = 0.5;
+
 
 // Measure fog by true distance from the camera to fade the asteroids in and out of FOV
 // (assisted by Claude Code)
@@ -117,6 +120,8 @@ keyboardInput();
 
 const { ship, cameraMount, rearMount, update } = createShip();
 
+let shipBox = new THREE.Box3().setFromObject(ship);
+
 // Flip the hierarchy: the camera lives in the scene, the ship rides on the camera
 scene.add(camera);
 camera.add(ship);
@@ -146,6 +151,70 @@ function renderRearViewMirror() {
   renderer.setScissorTest(false);
 }
 
+const sparkPositions = new Float32Array(SPARK_COUNT * 3);
+const sparkVelocities = new Float32Array(SPARK_COUNT * 3);
+const sparkGeometry = new THREE.BufferGeometry();
+sparkGeometry.setAttribute("position", new THREE.BufferAttribute(sparkPositions, 3));
+
+const sparks = new THREE.Points(
+  sparkGeometry,
+  new THREE.PointsMaterial({ color: 0xff8800, size: 0.1 }),
+);
+sparks.visible = false;
+sparks.frustumCulled = false;
+ship.add(sparks);
+
+let sparkTime = 0;
+const sparkDir = new THREE.Vector3();
+
+/**
+ * Starts a burst of orange sparks from a random front corner of the ship.
+ */
+function shipSparks() {
+  if (sparks.visible) return;
+
+  const side = Math.random() < 0.5 ? -1 : 1;
+
+  for (let i = 0; i < SPARK_COUNT * 3; i += 3) {
+    // Front corner of the cockpit 
+    sparkPositions[i] = side * 2;
+    sparkPositions[i + 1] = 1.4;
+    sparkPositions[i + 2] = -2.1;
+
+    // Random direction pointing outward and forward
+    sparkDir
+      .set(side * Math.random(), Math.random() - 0.5, -Math.random())
+      .normalize()
+      .multiplyScalar(SPARK_SPEED);
+    sparkVelocities[i] = sparkDir.x;
+    sparkVelocities[i + 1] = sparkDir.y;
+    sparkVelocities[i + 2] = sparkDir.z;
+  }
+
+  sparkTime = SPARK_LIFETIME;
+  sparks.visible = true;
+  sparkGeometry.attributes.position.needsUpdate = true;
+}
+
+/**
+ * Moves the active sparks and hides them once their lifetime runs out.
+ * @param {number} dt seconds since the last frame
+ */
+function updateSparks(dt) {
+  if (!sparks.visible) return;
+
+  sparkTime -= dt;
+  if (sparkTime <= 0) {
+    sparks.visible = false;
+    return;
+  }
+
+  for (let i = 0; i < SPARK_COUNT * 3; i++) {
+    sparkPositions[i] += sparkVelocities[i] * dt;
+  }
+  sparkGeometry.attributes.position.needsUpdate = true;
+}
+
 /**
  * Render loop, called once per frame
  */
@@ -155,8 +224,18 @@ function animate(time) {
 
   updateMovement(dt);
   rotateShip(dt);
+  updateSparks(dt);
   update(time / 1000, 0, (qPresssed ? 1 : 0) - (ePresssed ? 1 : 0));
   updateAsteroids(scene, camera, asteroids);
+  shipBox.setFromObject(ship);
+
+  for (let i = 0; i < asteroids.length; i++) {
+    const asteroid = asteroids[i];
+    if (shipBox.intersectsBox(asteroid.userData.asteroidBox)) {
+      console.log("Collision detected with asteroid:", asteroid);
+      shipSparks();
+    }
+  }
 
   // Main cockpit view over the full screen
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
