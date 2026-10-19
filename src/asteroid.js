@@ -18,7 +18,6 @@ const textures = [
     "Kissel.jpg",
     "powerBrick.jpg",
     "Seth.jpg",
-    "Jelly.webp",
     "Stuetzle.webp", // ;)
 ];
 
