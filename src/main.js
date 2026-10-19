@@ -20,9 +20,13 @@ const SPARK_COUNT = 40;
 const SPARK_SPEED = 10;
 const SPARK_LIFETIME = 0.5;
 
-const OUTLINE_SCALE = 1.1
-const outlineMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.NotEqualStencilFunc });
-
+const OUTLINE_SCALE = 1.1;
+const outlineMaterial = new THREE.MeshBasicMaterial({
+  color: 0xff0000,
+  stencilWrite: true,
+  stencilRef: 1,
+  stencilFunc: THREE.NotEqualStencilFunc,
+});
 
 // Measure fog by true distance from the camera to fade the asteroids in and out of FOV
 // (assisted by Claude Code)
@@ -110,12 +114,8 @@ function rotateShip(dt) {
  * (copied from project 2)
  */
 function onMouseMove(event) {
-  camera.rotation.y -= event.movementX * MOUSE_SENSITIVITY;
-  camera.rotation.x = THREE.MathUtils.clamp(
-    camera.rotation.x - event.movementY * MOUSE_SENSITIVITY,
-    -Math.PI / 2 + 0.01,
-    Math.PI / 2 - 0.01,
-  );
+  camera.rotateY(-event.movementX * MOUSE_SENSITIVITY);
+  camera.rotateX(-event.movementY * MOUSE_SENSITIVITY);
 }
 
 document.addEventListener("mousemove", onMouseMove);
@@ -157,7 +157,10 @@ function renderRearViewMirror() {
 const sparkPositions = new Float32Array(SPARK_COUNT * 3);
 const sparkVelocities = new Float32Array(SPARK_COUNT * 3);
 const sparkGeometry = new THREE.BufferGeometry();
-sparkGeometry.setAttribute("position", new THREE.BufferAttribute(sparkPositions, 3));
+sparkGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(sparkPositions, 3),
+);
 
 const sparks = new THREE.Points(
   sparkGeometry,
@@ -179,7 +182,7 @@ function shipSparks() {
   const side = Math.random() < 0.5 ? -1 : 1;
 
   for (let i = 0; i < SPARK_COUNT * 3; i += 3) {
-    // Front corner of the cockpit 
+    // Front corner of the cockpit
     sparkPositions[i] = side * 2;
     sparkPositions[i + 1] = 1.4;
     sparkPositions[i + 2] = -2.1;
@@ -219,7 +222,7 @@ function updateSparks(dt) {
 }
 
 /**
- * Outlines the given asteroid with a red outline 
+ * Outlines the given asteroid with a red outline
  * @param {THREE.Mesh} asteroid
  */
 function outlineAsteroid(asteroid) {
