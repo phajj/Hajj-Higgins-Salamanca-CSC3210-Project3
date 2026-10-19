@@ -116,7 +116,6 @@ export function updateAsteroids(scene, camera, asteroids) {
     // Remove asteroids that are too far away
     for (let i = asteroids.length - 1; i >= 0; i--) {
         const asteroid = asteroids[i];
-        asteroid.userData.asteroidBox.setFromObject(asteroid);
         if (!limitVisibility(camera, asteroid)) {
             scene.remove(asteroid);
             asteroids.splice(i, 1);
@@ -140,6 +139,7 @@ export function updateAsteroids(scene, camera, asteroids) {
         moveAsteroid(asteroid);
         asteroid.rotation.x += 0.005;
         asteroid.rotation.y += 0.01;
+        asteroid.userData.asteroidBox.setFromObject(asteroid);
     }
 }
 

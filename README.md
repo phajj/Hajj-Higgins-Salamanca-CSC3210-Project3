@@ -8,11 +8,12 @@ Computer Graphics Project 3
 
 ## Overview
 
-TODO
+- This project is a 3D space simulation game where the player controls a spaceship navigating through an asteroid field. The game features realistic physics, collision detection, and a dynamic environment with asteroids that spawn and despawn based on the player's field of view.
 
 ## How to Play
 
-TODO
+- Turn the spaceship using the mouse to guide the spaceship where you want it to go.
+- Rotate the spaceship using Q and E keys
 
 ## Running the Project
 
@@ -27,6 +28,10 @@ TODO
 3. Open the printed local address (e.g. `http://localhost:3000`) in your browser.
 
 ## Technical Docs
+
+- Stencil Test: Used to draw outline of asteroids that have been collided with
+- Scissor Test: Used to draw rear view mirror to a fixed area
+- Bounding Boxes: Used to detect collisions between asteroids and the ship
 
 ### Challenges
 - The biggest challenge we faced was optimization, specifically spawning and despawning asteroids within the FOV. After a lot of trial and error with different combinations of `ASTEROID_COUNT`, `MAX_DISTANCE`, and `SPAWN_DISTANCE`, I used Claude Code (see [prompts.md](docs/prompts.md)) to help create a fog effect that hides the spawning and despawning. This let me make `ASTEROID_COUNT`, `MAX_DISTANCE`, and `SPAWN_DISTANCE` much smaller, which significantly improved performance.
