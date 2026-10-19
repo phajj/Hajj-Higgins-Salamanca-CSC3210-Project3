@@ -20,6 +20,9 @@ const SPARK_COUNT = 40;
 const SPARK_SPEED = 10;
 const SPARK_LIFETIME = 0.5;
 
+const OUTLINE_SCALE = 1.1
+const outlineMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.NotEqualStencilFunc });
+
 
 // Measure fog by true distance from the camera to fade the asteroids in and out of FOV
 // (assisted by Claude Code)
@@ -35,7 +38,7 @@ scene.background = new THREE.Color(0x000000);
 scene.fog = new THREE.Fog(0x000000, FOG_NEAR, FOG_FAR);
 
 // Renderer
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, stencil: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -216,6 +219,27 @@ function updateSparks(dt) {
 }
 
 /**
+ * Outlines the given asteroid with a red outline 
+ * @param {THREE.Mesh} asteroid
+ */
+function outlineAsteroid(asteroid) {
+  if (asteroid.userData.outline) return;
+
+  // The asteroid writes 1 into the stencil buffer wherever it draws
+  asteroid.material.stencilWrite = true;
+  asteroid.material.stencilRef = 1;
+  asteroid.material.stencilFunc = THREE.AlwaysStencilFunc;
+  asteroid.material.stencilZPass = THREE.ReplaceStencilOp;
+
+  const outline = new THREE.Mesh(asteroid.geometry, outlineMaterial);
+  outline.scale.setScalar(OUTLINE_SCALE);
+  outline.renderOrder = 1;
+
+  asteroid.add(outline);
+  asteroid.userData.outline = outline;
+}
+
+/**
  * Render loop, called once per frame
  */
 function animate(time) {
@@ -234,6 +258,7 @@ function animate(time) {
     if (shipBox.intersectsBox(asteroid.userData.asteroidBox)) {
       console.log("Collision detected with asteroid:", asteroid);
       shipSparks();
+      outlineAsteroid(asteroid);
     }
   }
 
