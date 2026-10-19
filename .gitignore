@@ -1,1 +1,4 @@
 node_modules/
+
+# Used for testing viewing geometries while working:
+asteroid-test.html
