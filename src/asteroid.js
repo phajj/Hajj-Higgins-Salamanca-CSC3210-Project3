@@ -21,6 +21,8 @@ const textures = [
     "Stuetzle.webp", // ;)
 ];
 
+export let asteroids = [];
+
 // Generates a random asteroid material with a random color and picks a random texture from the textures array (assisted by Claude Code)
 function randomMaterial() {
     const file = textures[Math.floor(Math.random() * textures.length)];
@@ -114,6 +116,7 @@ export function updateAsteroids(scene, camera, asteroids) {
     // Remove asteroids that are too far away
     for (let i = asteroids.length - 1; i >= 0; i--) {
         const asteroid = asteroids[i];
+        asteroid.userData.asteroidBox.setFromObject(asteroid);
         if (!limitVisibility(camera, asteroid)) {
             scene.remove(asteroid);
             asteroids.splice(i, 1);
@@ -148,5 +151,7 @@ export function createAsteroid() {
     // Store the movement attributes on the mesh so the animation loop can read them per asteroid (assisted by Claude Code)
     asteroid.userData = randomMovement();
     asteroid.rotation.copy(randomRotation());
+    asteroid.userData.asteroidBox = new THREE.Box3().setFromObject(asteroid);
+    asteroids.push(asteroid);
     return asteroid;
 }
