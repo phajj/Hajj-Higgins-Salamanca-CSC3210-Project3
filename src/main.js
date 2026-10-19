@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { perspectiveCamera, rearViewCamera } from "./camera.js";
 import { createShip } from "./ship.js";
+import { updateAsteroids } from "./asteroid.js";
 
 const MOUSE_SENSITIVITY = 0.002;
 const CAMERA_MOVE_SPEED = 0.01;
@@ -11,9 +12,24 @@ const MIRROR_WIDTH = 0.2;
 const MIRROR_HEIGHT = 0.07;
 const MIRROR_BOTTOM = 0.8;
 
+// Fully visible up to FOG_NEAR, fades to black by FOG_FAR (asteroids spawn/despawn past FOG_FAR)
+const FOG_NEAR = 30;
+const FOG_FAR = 60;
+
+const asteroids = [];
+
+// Measure fog by true distance from the camera to fade the asteroids in and out of FOV
+// (assisted by Claude Code)
+THREE.ShaderChunk.fog_vertex = `
+#ifdef USE_FOG
+  vFogDepth = length( mvPosition.xyz );
+#endif
+`;
+
 // Scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
+scene.fog = new THREE.Fog(0x000000, FOG_NEAR, FOG_FAR);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -113,40 +129,7 @@ rearMount.add(rearCamera);
 ship.position.copy(cameraMount.position).negate();
 camera.position.set(0, 0, 0);
 
-// TEMPORARY: test objects so you can see movement. Delete when done.
-const boxGeo = new THREE.BoxGeometry(2, 2, 2);
-for (let i = 0; i < 300; i++) {
-  const m = new THREE.Mesh(
-    boxGeo,
-    new THREE.MeshBasicMaterial({
-      color: new THREE.Color().setHSL(Math.random(), 0.7, 0.55),
-      wireframe: true,
-    }),
-  );
-  m.position.set(
-    (Math.random() - 0.5) * 300,
-    (Math.random() - 0.5) * 300,
-    (Math.random() - 0.5) * 300,
-  );
-  if (m.position.length() < 10) continue; // keep the start area clear
-  scene.add(m);
-}
-
-// Landmarks: red straight ahead, green to the right, blue above
-[
-  [0xff0000, 0, 0, -25],
-  [0x00ff00, 25, 0, 0],
-  [0x0000ff, 0, 25, 0],
-].forEach(([color, x, y, z]) => {
-  const m = new THREE.Mesh(boxGeo, new THREE.MeshBasicMaterial({ color }));
-  m.position.set(x, y, z);
-  m.scale.setScalar(3);
-  scene.add(m);
-});
 let lastTime = null;
-
-//END TEST OBJECTS
-
 /**
  * Place rear view mirror using the scissor test
  */
@@ -173,6 +156,7 @@ function animate(time) {
   updateMovement(dt);
   rotateShip(dt);
   update(time / 1000, 0, (qPresssed ? 1 : 0) - (ePresssed ? 1 : 0));
+  updateAsteroids(scene, camera, asteroids);
 
   // Main cockpit view over the full screen
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
