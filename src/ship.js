@@ -210,6 +210,28 @@ function buildWheel() {
   return { wheel, rotor };
 }
 
+// Create a lever that shifts up and down as warp speed changes 
+function buildWarpLever() {
+  const lever = new THREE.Group();
+  lever.position.set(0.6, 0.47, -0.95);
+
+  const shaft = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.015, 0.015, 0.3, 8),
+    trimMat,
+  );
+  shaft.position.y = 0.15;
+  lever.add(shaft);
+
+  const handle = new THREE.Mesh(
+    new THREE.SphereGeometry(0.04, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xcc2222 }),
+  );
+  handle.position.y = 0.3;
+  lever.add(handle);
+
+  return lever;
+}
+
 // Builds the rear view mirror mesh for the ship
 function buildRearViewMirror() {
   const mirror = new THREE.Mesh(
@@ -239,11 +261,13 @@ export function createShip() {
   rearMount.rotation.y = Math.PI;
 
   const { wheel, rotor } = buildWheel();
+  const lever = buildWarpLever();
 
   ship.add(
     buildHull(),
     buildDashboard(),
     wheel,
+    lever,
     buildLights(),
     cameraMount,
     rearMount,
@@ -259,6 +283,9 @@ export function createShip() {
     // Smoothly rotate the wheel toward the steering input
     rotor.rotation.z +=
       (steer * 0.9 - rotor.rotation.z) * (1 - Math.exp(-10 * dt));
+
+    // Tilt warp lever based on throttle
+    lever.rotation.x = THREE.MathUtils.lerp(0.5, -0.5, throttle);
   }
 
   return { ship, cameraMount, rearMount, update };

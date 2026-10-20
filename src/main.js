@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { perspectiveCamera, rearViewCamera } from "./camera.js";
 import { createShip } from "./ship.js";
 import { updateAsteroids, asteroids } from "./asteroid.js";
-import { updateWarp, warpSpeedMultiplier, addWarpStretch, addWarpStars } from "./warp.js";
+import { updateWarp, warpSpeedMultiplier, addWarpStretch, addWarpStars, warpAmount, renderWithWarp } from "./warp.js";
 
 const MOUSE_SENSITIVITY = 0.002;
 const CAMERA_MOVE_SPEED = 0.01;
@@ -295,7 +295,7 @@ function animate(time) {
   updateMovement(dt);
   rotateShip(dt);
   updateSparks(dt);
-  update(time / 1000, 0, (qPresssed ? 1 : 0) - (ePresssed ? 1 : 0));
+  update(time / 1000, warpAmount(), (qPresssed ? 1 : 0) - (ePresssed ? 1 : 0));
   updateAsteroids(scene, camera, asteroids);
   shipBox.setFromObject(ship);
 
@@ -310,7 +310,7 @@ function animate(time) {
 
   // Main cockpit view over the full screen
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-  renderer.render(scene, camera);
+  renderWithWarp(renderer, scene, camera);
 
   renderRearViewMirror();
 }

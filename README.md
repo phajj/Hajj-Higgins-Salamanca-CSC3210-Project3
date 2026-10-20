@@ -35,7 +35,8 @@ Computer Graphics Project 3
 
 ### Challenges
 - The biggest challenge we faced was optimization, specifically spawning and despawning asteroids within the FOV. After a lot of trial and error with different combinations of `ASTEROID_COUNT`, `MAX_DISTANCE`, and `SPAWN_DISTANCE`, I used Claude Code (see [prompts.md](docs/prompts.md)) to help create a fog effect that hides the spawning and despawning. This let me make `ASTEROID_COUNT`, `MAX_DISTANCE`, and `SPAWN_DISTANCE` much smaller, which significantly improved performance.
+- I (Jackson) was struggling to figure out how to apply a shader globally to the entire scene for the warp effect. From Googling I found using a full screen quad with a custom shader material to be the easiest way to achieve this. This allowed me to render the scene to the quad first as a texture, then when the shader pipeline is executed it runs on the full screen quad, effectively applying the warp effect to the entire scene.
 
 ### Above and Beyond Implementations
-- **TODO:** Describe UI above and beyond elements
+- **Warp Effect:** Implemented a global warp effect using a full screen quad with a custom shader material to apply custom UV distortion to the entire scene.
 - **Additional above and beyond:** Added a fog effect so asteroids fade in and out of the FOV more smoothly and naturally.

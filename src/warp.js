@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
 
 /**
  * Toggle warp on/off with the Shift key. Warp speeds up the ship and stretches the asteroids along the view direction.
@@ -84,6 +85,10 @@ export function updateWarp(dt) {
   if (stars.visible) updateStars(dt);
 }
 
+export function warpAmount() {
+  return warp;
+}
+
 /**
  * @returns {number} how many times faster than normal the ship should move
  */
@@ -109,4 +114,72 @@ export function addWarpStretch(material) {
       gl_Position = projectionMatrix * mvPosition;`,
     );
   };
+}
+
+// Draw the scene into warpTarget first then draw it to the screen with distortion applied.
+const warpTarget = new THREE.WebGLRenderTarget(1, 1, { stencilBuffer: true, samples: 4 });
+const screenSize = new THREE.Vector2();
+
+const distortionQuad = new FullScreenQuad(
+  new THREE.ShaderMaterial({
+    uniforms: {
+      uScene: { value: warpTarget.texture },
+      uStrength: { value: 0 }, // 0 = no distortion, 1 = full warp
+    },
+    vertexShader: `
+      varying vec2 vUv;
+
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position.xy, 0.0, 1.0);
+      }
+    `,
+    fragmentShader: `
+      const float BULGE = 0.3;    // How much the image stretches outward from the center
+      const float STREAK = 0.015; // How long the motion streaks are
+      const int SAMPLES = 8;
+
+      uniform sampler2D uScene;
+      uniform float uStrength;
+      varying vec2 vUv;
+
+      void main() {
+        vec2 fromCenter = vUv - 0.5;
+
+        // Read closer to the center the further out the pixel is, so the image bulges outward
+        float bulge = 1.0 - uStrength * BULGE * length(fromCenter);
+
+        // Average a few reads stepping toward the center to blur it into streaks
+        vec4 color = vec4(0.0);
+        for (int i = 0; i < SAMPLES; i++) {
+          float streak = 1.0 - uStrength * STREAK * float(i);
+          color += texture2D(uScene, 0.5 + fromCenter * bulge * streak);
+        }
+        gl_FragColor = color / float(SAMPLES);
+
+        #include <colorspace_fragment>
+      }
+    `,
+  }),
+);
+
+/**
+ * Renders the scene to the screen with the warp distortion applied. The distortion
+ * grows with the warp amount, so at normal speed the image is unchanged.
+ * @param {THREE.WebGLRenderer} renderer
+ * @param {THREE.Scene} scene
+ * @param {THREE.Camera} camera
+ */
+export function renderWithWarp(renderer, scene, camera) {
+  // Match the screen size (also handles window resizes)
+  renderer.getDrawingBufferSize(screenSize);
+  warpTarget.setSize(screenSize.x, screenSize.y);
+
+  // Draw the scene into the target, then draw the target to the screen distorted
+  renderer.setRenderTarget(warpTarget);
+  renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+
+  distortionQuad.material.uniforms.uStrength.value = warp;
+  distortionQuad.render(renderer);
 }
