@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { addWarpStretch } from "./warp.js";
 
 /**
  * Generates a random asteroid mesh with a custom texture material.
@@ -35,6 +36,7 @@ function randomMaterial() {
     const material = new THREE.MeshBasicMaterial({ // Use the map attribute to hold the texture
         map: texture, color
     });
+    addWarpStretch(material);
     return material;
 }
 

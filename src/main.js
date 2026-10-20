@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { perspectiveCamera, rearViewCamera } from "./camera.js";
 import { createShip } from "./ship.js";
 import { updateAsteroids, asteroids } from "./asteroid.js";
+import { updateWarp, warpSpeedMultiplier, addWarpStretch, addWarpStars } from "./warp.js";
 
 const MOUSE_SENSITIVITY = 0.002;
 const CAMERA_MOVE_SPEED = 0.01;
@@ -23,6 +24,7 @@ const SPARK_GLOW_SIZE = 300;
 
 const OUTLINE_SCALE = 1.1
 const outlineMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.NotEqualStencilFunc });
+addWarpStretch(outlineMaterial);
 
 
 // Measure fog by true distance from the camera to fade the asteroids in and out of FOV
@@ -87,12 +89,12 @@ const forward = new THREE.Vector3();
 
 /**
  * Moves the perspective camera forward (towards the center of the screen)
- * at a constant speed. Called every frame from animate().
+ * at a constant speed, sped up while warping. Called every frame from animate().
  * (copied and modified from project 2)
  */
 function updateMovement() {
   camera.getWorldDirection(forward);
-  camera.position.addScaledVector(forward, CAMERA_MOVE_SPEED);
+  camera.position.addScaledVector(forward, CAMERA_MOVE_SPEED * warpSpeedMultiplier());
 }
 
 /**
@@ -129,6 +131,7 @@ let shipBox = new THREE.Box3().setFromObject(ship);
 // Flip the hierarchy: the camera lives in the scene, the ship rides on the camera
 scene.add(camera);
 camera.add(ship);
+addWarpStars(camera);
 
 // Add rear camera to the ship
 const rearCamera = rearViewCamera();
@@ -288,6 +291,7 @@ function animate(time) {
   const dt = lastTime === null ? 0 : Math.min((time - lastTime) / 1000, MAX_DT);
   lastTime = time;
 
+  updateWarp(dt);
   updateMovement(dt);
   rotateShip(dt);
   updateSparks(dt);
