@@ -9,6 +9,10 @@ Computer Graphics Project 3
 ## Overview
 
 - This project is a 3D space simulation game where the player controls a spaceship navigating through an asteroid field. The game features realistic physics, collision detection, and a dynamic environment with asteroids that spawn and despawn based on the player's field of view.
+- The player flies from inside the ship's **cockpit**, which includes a **rear view mirror** showing what is behind the ship.
+- When the ship collides with an asteroid, **sparks** fly from the ship and that asteroid gets a **red outline**. The outline marks the asteroid as one you have already hit, and it stays on the asteroid for as long as it is in the scene.
+- **Fog** darkens the space far from the ship, so asteroids fade in and out of view instead of popping in and out.
+- Turning on **warp speed** stretches the asteroids and blurs the whole screen to give a sense of speed.
 
 ## How to Play
 
