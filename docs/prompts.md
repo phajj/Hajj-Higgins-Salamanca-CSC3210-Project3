@@ -12,6 +12,8 @@ This file records the prompts we gave to AI coding assistents and/or other LLMs 
   - Reported that loading astroid-test.html showed only the keybind UI and no asteroids.
   - Remove the left over artifacts of the parabolicDrift and linearDrift in randomMovement
 - I am struggling with optimizing the @src/asteroid.js in the sense that I have tried several different values for ASTEROID_COUNT, MAX_DISTANCE, SPAWN_DISTANCE to see what feels the most natural. Either the asteroids are too noticably despawning/spawning or if I set the distance and count higher it starts taking a toll on preformance and fps. Help me adjust the ambiant light to make the FOV roughly 20-50 units away from the camera, once it goes beyond that it gets darker and dark. That way I can despawn/spawn beyond the 50 and make it feel more natural to slowly fade into light
+- Update the speed in randomMovement to be using delta time instead of being frame dependent in @src/asteroid.js
+  - Also converted the asteroid rotation spin in updateAsteroids to use delta time.
 
 ## Jackson
 

@@ -295,7 +295,7 @@ function animate(time) {
   rotateShip(dt);
   updateSparks(dt);
   update(time / 1000, warpAmount(), (qPresssed ? 1 : 0) - (ePresssed ? 1 : 0));
-  updateAsteroids(scene, camera, asteroids);
+  updateAsteroids(scene, camera, asteroids, dt);
   shipBox.setFromObject(ship);
 
   for (let i = 0; i < asteroids.length; i++) {
