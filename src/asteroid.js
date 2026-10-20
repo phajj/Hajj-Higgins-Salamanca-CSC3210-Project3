@@ -73,16 +73,17 @@ function randomRotation() {
 
 // Generates random speed, direction, drift, and drift type (linear/parabolic/spiral)
 function randomMovement() {
-    const speed = Math.random() * 0.1 + 0.05; // Random speed between 0.05 and 0.15
+    const speed = Math.random() * 12 + 6; // Random speed between 6 and 18 units per second
     const direction = new THREE.Vector3(
         (Math.random() - 0.5) * 2,
         (Math.random() - 0.5) * 2,
         (Math.random() - 0.5) * 2
     ).normalize();
+    // Drift is per second, scaled by dt in moveAsteroid
     const drift = new THREE.Vector3(
-        (Math.random() - 0.5) * 0.01,
-        (Math.random() - 0.5) * 0.01,
-        (Math.random() - 0.5) * 0.01
+        (Math.random() - 0.5) * 0.6,
+        (Math.random() - 0.5) * 0.6,
+        (Math.random() - 0.5) * 0.6
     );
     // Randomly choose how the drift is applied in moveAsteroid 
     const driftTypes = ["linear", "parabolic", "spiral"];
@@ -91,19 +92,19 @@ function randomMovement() {
 }
 
 // Moves an asteroid in its drift style (assisted by Claude Code)
-export function moveAsteroid(asteroid) {
+export function moveAsteroid(asteroid, dt) {
     const { speed, direction, driftType, drift } = asteroid.userData;
     // Drift accumulates each frame, bending the path into a parabola
     if (driftType === "parabolic")
-        direction.add(drift); 
+        direction.addScaledVector(drift, dt);
     // Turns the direction each frame, curving into a circle/helix
-    else if (driftType === "spiral") 
-        direction.applyAxisAngle(drift.clone().normalize(), drift.length()); 
-    
-    asteroid.position.addScaledVector(direction, speed);
+    else if (driftType === "spiral")
+        direction.applyAxisAngle(drift.clone().normalize(), drift.length() * dt);
+
+    asteroid.position.addScaledVector(direction, speed * dt);
      // Constant offset keeps the path a straight line
-    if (driftType === "linear") 
-        asteroid.position.add(drift);
+    if (driftType === "linear")
+        asteroid.position.addScaledVector(drift, dt);
     
 }
 // Generates asteroids only when the perspective camera is within a certain distance of the astroid
@@ -114,7 +115,7 @@ export function limitVisibility(camera, asteroid) {
 }
 
 // Updates the asteroids in the scene, spawning new ones and deleting old ones based on their distance from the camera
-export function updateAsteroids(scene, camera, asteroids) {
+export function updateAsteroids(scene, camera, asteroids, dt) {
     // Remove asteroids that are too far away
     for (let i = asteroids.length - 1; i >= 0; i--) {
         const asteroid = asteroids[i];
@@ -138,9 +139,9 @@ export function updateAsteroids(scene, camera, asteroids) {
     }
     // Move and spin every asteroid each frame
     for (const asteroid of asteroids) {
-        moveAsteroid(asteroid);
-        asteroid.rotation.x += 0.005;
-        asteroid.rotation.y += 0.01;
+        moveAsteroid(asteroid, dt);
+        asteroid.rotation.x += 0.3 * dt;
+        asteroid.rotation.y += 0.6 * dt;
         asteroid.userData.asteroidBox.setFromObject(asteroid);
     }
 }
