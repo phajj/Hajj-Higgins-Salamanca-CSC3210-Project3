@@ -14,6 +14,7 @@ Computer Graphics Project 3
 
 - Turn the spaceship using the mouse to guide the spaceship where you want it to go.
 - Rotate the spaceship using Q and E keys
+- Use shift to toggle warp speed on and off
 
 ## Running the Project
 
