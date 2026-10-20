@@ -18,7 +18,8 @@ const FOG_FAR = 60;
 
 const SPARK_COUNT = 40;
 const SPARK_SPEED = 10;
-const SPARK_LIFETIME = 0.5;
+const SPARK_LIFETIME = 1.5;
+const SPARK_GLOW_SIZE = 300;
 
 const OUTLINE_SCALE = 1.1;
 const outlineMaterial = new THREE.MeshBasicMaterial({
@@ -169,6 +170,47 @@ const sparks = new THREE.Points(
 sparks.visible = false;
 sparks.frustumCulled = false;
 ship.add(sparks);
+
+const sparkGlowMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uColor: { value: new THREE.Color(0xff8800) },
+    uLife: { value: 1.0 },
+    uSize: { value: SPARK_GLOW_SIZE },
+  },
+  vertexShader: `
+    uniform float uLife;
+    uniform float uSize;
+
+    // Scale glow size based on sparks lifetime and distance
+    void main() {
+      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+      gl_PointSize = uSize * uLife / -mvPosition.z;
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  `,
+  fragmentShader: `
+    uniform vec3 uColor;
+    uniform float uLife;
+
+    // Add glow effect to the spark
+    void main() {
+      float distFromCenter = length(gl_PointCoord - 0.5);
+      if (distFromCenter > 0.5) discard;
+      float glow = 1.0 - distFromCenter;
+      gl_FragColor = vec4(uColor, glow * uLife);
+    }
+  `,
+  transparent: true,
+});
+
+const sparkGlow = new THREE.Points(sparkGeometry, sparkGlowMaterial);
+sparkGlow.frustumCulled = false;
+
+// Update spark lifetime before rendering the glow
+sparkGlow.onBeforeRender = () => {
+  sparkGlowMaterial.uniforms.uLife.value = Math.max(sparkTime / SPARK_LIFETIME, 0);
+};
+sparks.add(sparkGlow);
 
 let sparkTime = 0;
 const sparkDir = new THREE.Vector3();
